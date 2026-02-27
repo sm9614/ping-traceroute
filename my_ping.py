@@ -57,8 +57,10 @@ def icmp_packet(id, seq, size):
     '''
     # !BBHHH is 1 byte for type, 1 byte for code,
     # 2 bytes for checksum, 2 bytes for id, and 2 bytes for sequence number
-    header = struct.pack("!BBHHH", 8, 0, 0, id, seq) # type 8 is echo request
-    data = struct.pack("!d", time.time()) + bytes(size) # 8 bytes for timestamp + size bytes of data
+    header = struct.pack("!BBHHH", 8, 0, 0, id, seq)
+    
+    # 8 bytes for timestamp + size bytes of data
+    data = struct.pack("!d", time.time()) + bytes(size)
 
     checksum_value = get_checksum(header + data)
     header = struct.pack("!BBHHH", 8, 0, checksum_value, id, seq)
@@ -90,7 +92,7 @@ def receive_reply(sock, id, seq, timeout):
             pkt_type, code, checksum, pkt_id, pkt_seq = struct.unpack(
                 "!BBHHH", icmp_header)
             if pkt_type == 0 and pkt_id == id and pkt_seq == seq:
-                
+
                 sent_time = struct.unpack("!d", pkt[28:36])[0]
                 rtt = (time.time() - sent_time)
                 return rtt, ttl, addr[0]
@@ -124,12 +126,13 @@ def main():
             sock.sendto(pkt, (dst_addr, 1))
             pkts_sent += 1
             reply = receive_reply(sock, id, sequence_number, args.i)
-            
+
             if reply:
                 rtt, ttl, addr = reply
                 pkts_received += 1
                 rtts.append(rtt)
-                print(f"Reply from {dst_addr}: bytes={args.s} time={int(rtt * 1000)}ms TTL={ttl}")
+                print(
+                    f"Reply from {dst_addr}: bytes={args.s} time={int(rtt * 1000)}ms TTL={ttl}")
             else:
                 print(f"Request timed out.")
             sequence_number += 1
@@ -138,10 +141,12 @@ def main():
         pass
     loss = (pkts_sent - pkts_received) / pkts_sent * 100
     print(f"\nPing Statistics for {dst_addr}:")
-    print(f"\tPackets: Sent = {pkts_sent}, Received = {pkts_received}, Lost = {loss:.2f}% loss),")
+    print(
+        f"\tPackets: Sent = {pkts_sent}, Received = {pkts_received}, Lost = {loss:.2f}% loss),")
     if rtts:
         print(f"Approximate round trip times in milli-seconds:")
-        print(f"\tMinimum = {int(min(rtts) * 1000)}ms, Maximum = {int(max(rtts) * 1000)}ms, Average = {int(sum(rtts) / len(rtts) * 1000)}ms")
+        print(
+            f"\tMinimum = {int(min(rtts) * 1000)}ms, Maximum = {int(max(rtts) * 1000)}ms, Average = {int(sum(rtts) / len(rtts) * 1000)}ms")
 
 
 if __name__ == "__main__":
