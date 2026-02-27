@@ -19,7 +19,8 @@ def get_args():
     parser.add_argument(
         "-s", help="Specify the number of data bytes to be sent. Default is 56", type=int, default=56)
     parser.add_argument(
-        "-t", help="Specify a timeout in seconds before ping exits regardless of how many packets have been received.", type=int)
+        "-t", help="Specify a timeout in seconds before ping exits regardless of how "
+        "many packets have been received.", type=int)
     return parser.parse_args()
 
 
@@ -58,7 +59,7 @@ def icmp_packet(id, seq, size):
     # !BBHHH is 1 byte for type, 1 byte for code,
     # 2 bytes for checksum, 2 bytes for id, and 2 bytes for sequence number
     header = struct.pack("!BBHHH", 8, 0, 0, id, seq)
-    
+
     # 8 bytes for timestamp + size bytes of data
     data = struct.pack("!d", time.time()) + bytes(size)
 
@@ -104,9 +105,6 @@ def main():
     args = get_args()
     sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
 
-    if args.t:
-        sock.settimeout(args.t)
-
     dst_addr = socket.gethostbyname(args.host)
     print(f"pinging {args.host} [{dst_addr}] with {args.s} bytes of data:")
 
@@ -120,8 +118,15 @@ def main():
     rtts = []
     pkts_sent = 0
     pkts_received = 0
+    start = time.time()
     try:
         while pkts_sent < count:
+
+            elasped = time.time() - start
+            if args.t and elasped >= args.t:
+                print(f"\nPing timed out after {args.t} seconds.")
+                break
+
             pkt = icmp_packet(id, sequence_number, args.s)
             sock.sendto(pkt, (dst_addr, 1))
             pkts_sent += 1
@@ -146,7 +151,8 @@ def main():
     if rtts:
         print(f"Approximate round trip times in milli-seconds:")
         print(
-            f"\tMinimum = {int(min(rtts) * 1000)}ms, Maximum = {int(max(rtts) * 1000)}ms, Average = {int(sum(rtts) / len(rtts) * 1000)}ms")
+            f"\tMinimum = {int(min(rtts) * 1000)}ms, Maximum = {int(max(rtts) * 1000)}ms, "
+            f"Average = {int(sum(rtts) / len(rtts) * 1000)}ms")
 
 
 if __name__ == "__main__":
