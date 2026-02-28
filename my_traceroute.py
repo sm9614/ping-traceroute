@@ -1,6 +1,5 @@
 import argparse
 import socket
-import struct
 import time
 
 
@@ -30,6 +29,8 @@ def probe(ttl, dest_addr):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_TTL, ttl)
     send_time = time.time()
+
+    # port 33433 is used for traceroute probes
     sock.sendto(b"", (dest_addr, 33434))
     return sock, send_time
 
@@ -87,12 +88,14 @@ def main():
     recv_sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
     recv_sock.settimeout(1)
 
+    # 30 is the maximum number of hops to trace
     for ttl in range(1, 31):
         rtts = []
         hop_addr = None
         unanswered = 0
 
         for i in range(args.q):
+            # uses udp to send the probe and raw socket to receive the reply
             send_sock, send_time = probe(ttl, dst_addr)
             addr, rtt = receive_reply(recv_sock, send_time, timeout=1)
 
