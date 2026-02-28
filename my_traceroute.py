@@ -31,13 +31,12 @@ def probe(ttl, dest_addr):
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_TTL, ttl)
     send_time = time.time()
     sock.sendto(b"", (dest_addr, 33434))
-    sock.close()
-    return send_time
+    return sock, send_time
 
 
 def receive_reply(sock, send_time, timeout):
     '''
-    Gets the reply from the probe
+    Waits for reply from probe and calculates rtt
     send_time: the time the probe was sent
     timeout: the time to wait for a reply before giving up
     Returns: the address of the reply and the round trip time
@@ -50,13 +49,70 @@ def receive_reply(sock, send_time, timeout):
         return addr[0], rtt
 
     except socket.timeout:
-        return None
+        return None, None
+
+def print_hop(ttl, hop_addr, rtts, args):
+    '''
+    Prints the traceroute hops
+    ttl: the ttl of the hop
+    addr: the address of the hop
+    rtt: the round trip time of the hop
+    args: the arguments from the command line
+    '''
+
+    print(f"\t{ttl}, ", end="")
+
+    for rtt in rtts:
+        print(f"\t{rtt:.3f} ms, ", end="")
+
+    for i in range(args.q - len(rtts)):
+        print(f"\t*\t", end="")
+    
+    if hop_addr:
+        if args.n:
+            print(f"\t{hop_addr}")
+        else:
+            try:
+                host = socket.gethostbyaddr(hop_addr)[0]
+                print(f"\t{host}")
+            except socket.herror:
+                print(f"\t{hop_addr}")
 
 
 def main():
     args = get_args()
     dst_addr = socket.gethostbyname(args.host)
+    print(f"\ntraceroute to {args.host} [{dst_addr}] \nover a maximum of 30 hops:")
 
+    recv_sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
+    recv_sock.settimeout(1)
+
+    for ttl in range(1, 31):
+        rtts = []
+        hop_addr = None
+        unanswered = 0
+
+        for i in range(args.q):
+            send_sock, send_time = probe(ttl, dst_addr)
+            addr, rtt = receive_reply(recv_sock, send_time, timeout=1)
+
+            if addr:
+                hop_addr = addr
+                rtts.append(rtt)
+            else:
+                unanswered += 1
+            
+            send_sock.close()
+            
+        print_hop(ttl, hop_addr, rtts, args)
+
+        if args.S:
+            print(f"({unanswered} unanswered probes)", end="")
+            
+        if hop_addr == dst_addr:
+            print("\nTrace complete.")
+            break
 
 if __name__ == "__main__":
-    main()
+    main()  
+  
