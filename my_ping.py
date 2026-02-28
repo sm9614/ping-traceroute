@@ -8,7 +8,9 @@ import os
 def get_args():
     '''
     Gets the arguments from the command line and returns them
-    Returns: the arguments from the command line
+
+    Returns: 
+        the arguments from the command line
     '''
     parser = argparse.ArgumentParser()
     parser.add_argument("host", help="The host to ping")
@@ -27,8 +29,10 @@ def get_args():
 def get_checksum(data):
     '''
     Calculates the checksum of the given data
-    Data: the data to calculate the checksum of
-    Returns: the checksum of the data
+
+    args:
+        Data: the data to calculate the checksum of
+        Returns: the checksum of the data
     '''
     checksum = 0
 
@@ -51,10 +55,13 @@ def get_checksum(data):
 def icmp_packet(id, seq, size):
     '''
     Creates an ICMP echo request packet
-    id: the id of the packet
-    seq: the sequence number of the packet
-    size: the size of the data to be sent
-    Returns: the ICMP echo request packet
+
+    args:
+        id: the id of the packet
+        seq: the sequence number of the packet
+        size: the size of the data to be sent
+    Returns:
+        the ICMP echo request packet
     '''
     # !BBHHH is 1 byte for type, 1 byte for code,
     # 2 bytes for checksum, 2 bytes for id, and 2 bytes for sequence number
@@ -71,11 +78,14 @@ def icmp_packet(id, seq, size):
 def receive_reply(sock, id, seq, timeout):
     '''
     Receives an ICMP echo reply packet
-    sock: the socket to receive the packet on
-    id: the id of the packet to receive
-    seq: the sequence number of the packet to receive
-    timeout: the timeout in seconds to wait for a reply
-    Returns: the RTT, TTL, and source IP address of the reply packet
+    
+    args:
+        sock: the socket to receive the packet on
+        id: the id of the packet to receive
+        seq: the sequence number of the packet to receive
+        timeout: the timeout in seconds to wait for a reply
+    Returns: 
+        the RTT, TTL, and source IP address of the reply packet
     '''
     start = time.time()
     sock.settimeout(timeout)

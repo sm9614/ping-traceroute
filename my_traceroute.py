@@ -6,7 +6,9 @@ import time
 def get_args():
     '''
     Gets the arguments from the command line and returns them
-    Returns: the arguments from the command line
+
+    Returns: 
+        the arguments from the command line
     '''
     parser = argparse.ArgumentParser()
     parser.add_argument("host", help="the destination host")
@@ -22,9 +24,12 @@ def get_args():
 def probe(ttl, dest_addr):
     '''
     Sends UDP proble with a give ttl to the dst
-    ttl: the ttl to set for the probe
-    dest_addr: the destination address to send the probe to
-    Returns: the time the probe was sent
+
+    args:
+        ttl: the ttl to set for the probe
+        dest_addr: the destination address to send the probe to
+    Returns: 
+        the time the probe was sent
     '''
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_TTL, ttl)
@@ -38,8 +43,10 @@ def probe(ttl, dest_addr):
 def receive_reply(sock, send_time, timeout):
     '''
     Waits for reply from probe and calculates rtt
-    send_time: the time the probe was sent
-    timeout: the time to wait for a reply before giving up
+
+    args:
+        send_time: the time the probe was sent
+        timeout: the time to wait for a reply before giving up
     Returns: the address of the reply and the round trip time
     '''
     sock.settimeout(timeout)
@@ -55,10 +62,12 @@ def receive_reply(sock, send_time, timeout):
 def print_hop(ttl, hop_addr, rtts, args):
     '''
     Prints the traceroute hops
-    ttl: the ttl of the hop
-    addr: the address of the hop
-    rtt: the round trip time of the hop
-    args: the arguments from the command line
+
+    args:
+        ttl: the ttl of the hop
+        addr: the address of the hop
+        rtt: the round trip time of the hop
+        args: the arguments from the command line
     '''
 
     print(f"\t{ttl}, ", end="")
