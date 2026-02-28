@@ -87,12 +87,12 @@ def main():
 
     recv_sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
     recv_sock.settimeout(1)
+    unanswered = 0
 
     # 30 is the maximum number of hops to trace
     for ttl in range(1, 31):
         rtts = []
         hop_addr = None
-        unanswered = 0
 
         for i in range(args.q):
             # uses udp to send the probe and raw socket to receive the reply
@@ -108,13 +108,13 @@ def main():
             send_sock.close()
             
         print_hop(ttl, hop_addr, rtts, args)
-
-        if args.S:
-            print(f"({unanswered} unanswered probes)", end="")
             
         if hop_addr == dst_addr:
             print("\nTrace complete.")
             break
+
+    if args.S:
+        print(f"{unanswered} unanswered probes")
 
 if __name__ == "__main__":
     main()  
